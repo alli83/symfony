@@ -147,9 +147,12 @@ class RegisterEventListenersAndSubscribersPass implements CompilerPassInterface
     private function findAndSortTags(array $tagNames, ContainerBuilder $container): array
     {
         $sortedTags = [];
+        $taggedListeners = $container->findTaggedServiceIds($tagNames[1], true);
+        $taggedServicesIds[$tagNames[0]] = array_diff_key($container->findTaggedServiceIds($tagNames[0], true), $taggedListeners);
+        $taggedServicesIds[$tagNames[1]] = $taggedListeners;
 
-        foreach ($tagNames as $tagName) {
-            foreach ($container->findTaggedServiceIds($tagName, true) as $serviceId => $tags) {
+        foreach ($taggedServicesIds as $tagName => $serviceIds) {
+            foreach ($serviceIds as $serviceId => $tags) {
                 foreach ($tags as $attributes) {
                     $priority = $attributes['priority'] ?? 0;
                     $sortedTags[$priority][] = [$tagName, $serviceId, $attributes];
